@@ -25,7 +25,8 @@ func Test_Main(t *testing.T) {
 
 	// setup http controller
 	token := "xxx"
-	crontab.HttpControl("/inner/", token)
+	path := "/inn  er/ "
+	crontab.HttpControl(path, token)
 
 	// startup crontab
 	err = crontab.Startup()

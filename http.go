@@ -5,10 +5,13 @@ import (
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
 var (
+	reg = regexp.MustCompile("\\s+")
+
 	nameLiteral  = "name"
 	tokenLiteral = "token"
 
@@ -28,8 +31,15 @@ func (crontab *Crontab) HttpControl(path, token string) {
 	http.HandleFunc(basePath+"crontab-details", crontab.httpDetails(token))
 }
 
+func compressStr(str string) string {
+	if str == "" {
+		return ""
+	}
+	return reg.ReplaceAllString(str, "")
+}
+
 func base(path string) string {
-	path = strings.Trim(path, "")
+	path = compressStr(path)
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
