@@ -208,6 +208,6 @@ func (crontab *Crontab) Details() (map[string]map[string]jobinfo, error) {
 
 	return map[string]map[string]jobinfo{
 		"current":  crontab.jobinfos,
-		"original": crontab.jobinfos,
+		"original": crontab.jobinfos_,
 	}, nil
 }
