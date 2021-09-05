@@ -24,7 +24,7 @@ jobs := map[string]Job{
 }
 
 // create a crontab
-crontab, err := Create(jobs)
+crontab, err := cronctl.Create(jobs)
 ```
 
 ```go
