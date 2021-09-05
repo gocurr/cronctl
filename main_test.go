@@ -13,19 +13,19 @@ func Test_Main(t *testing.T) {
 		{Name: "demo2", Spec: "*/2 * * * * ?"},
 	}
 
-	// set mapping: name -> jobfunc
-	Map("demo1", Counter())
-	Map("demo2", Counter2())
+	nameFuns := make(map[string]func())
+	nameFuns["demo1"] = Counter()
+	nameFuns["demo2"] = Counter2()
 
 	// create a crontab
-	crontab, err := Create(jobs)
+	crontab, err := Create(jobs, nameFuns)
 	if err != nil {
 		panic(err)
 	}
 
 	// setup http controller
-	token := "xxx"
-	path := "/inn  er/ "
+	token := "abc"
+	path := "/inn  er-access"
 	crontab.HttpControl(path, token)
 
 	// startup crontab
