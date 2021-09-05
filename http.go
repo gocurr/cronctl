@@ -3,33 +3,73 @@ package cronctl
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"regexp"
 	"strings"
 )
 
-var (
-	reg = regexp.MustCompile("\\s+")
+const (
+	cronControlLiteral = "cron-control"
+	startLiteral       = "start"
+	continueLiteral    = "continue"
+	suspendLiteral     = "suspend"
+	disableLiteral     = "disable"
+	enableLiteral      = "enable"
+	detailLiteral      = "details"
 
 	nameLiteral  = "name"
 	tokenLiteral = "token"
 
 	contentType     = "Content-Type"
 	applicationJson = "application/json"
+)
 
-	parameterNotFoundErr = errors.New("parameter not found")
-	tokenNotValidErr     = errors.New("token not valid")
+var (
+	reg = regexp.MustCompile("\\s+")
+
+	unknownTypeErr   = errors.New("unknow type")
+	tokenNotValidErr = errors.New("token not valid")
 )
 
 func (crontab *Crontab) HttpControl(path, token string) {
 	basePath := base(path)
-	http.HandleFunc(basePath+"crontab-start", crontab.httpStartup(token))
-	http.HandleFunc(basePath+"crontab-continue", crontab.httpContinue(token))
-	http.HandleFunc(basePath+"crontab-suspend", crontab.httpSuspend(token))
-	http.HandleFunc(basePath+"crontab-disable", crontab.httpDisable(token))
-	http.HandleFunc(basePath+"crontab-enable", crontab.httpEnable(token))
-	http.HandleFunc(basePath+"crontab-details", crontab.httpDetails(token))
+	http.HandleFunc(basePath+cronControlLiteral, httpCronCtrl(crontab, token))
+}
+
+func httpCronCtrl(crontab *Crontab, token string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		method := "httpCronCtrl"
+		err := tokenValid(token, r)
+		if err != nil {
+			handleErr(method, err, w)
+			return
+		}
+
+		typ, err := parameter("type", r)
+		if err != nil {
+			handleErr(method, err, w)
+			return
+		}
+
+		switch typ {
+		case startLiteral:
+			crontab.httpStartup(w)
+		case continueLiteral:
+			crontab.httpContinue(w)
+		case suspendLiteral:
+			crontab.httpSuspend(w)
+		case detailLiteral:
+			crontab.httpDetails(w)
+		case enableLiteral:
+			crontab.httpEnable(w, r)
+		case disableLiteral:
+			crontab.httpDisable(w, r)
+		default:
+			handleErr(method, unknownTypeErr, w)
+		}
+	}
 }
 
 func compressStr(str string) string {
@@ -52,118 +92,73 @@ func base(path string) string {
 	return path
 }
 
-func (crontab *Crontab) httpDetails(token string) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		method := "httpDetails"
-		err := tokenValid(token, r)
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
-
-		details, err := crontab.Details()
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
-
-		marshal, err := json.Marshal(details)
-		if err != nil {
-			handleErr(method, err, w)
-		}
-
-		w.Header().Set(contentType, applicationJson)
-		_, _ = w.Write(marshal)
+func (crontab *Crontab) httpDetails(w http.ResponseWriter) {
+	method := "httpDetails"
+	details, err := crontab.Details()
+	if err != nil {
+		handleErr(method, err, w)
+		return
 	}
-}
 
-func (crontab *Crontab) httpDisable(token string) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		method := "httpDisable"
-		err := tokenValid(token, r)
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
-
-		name, err := parameter(nameLiteral, r)
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
-
-		err = crontab.Disable(name)
+	marshal, err := json.Marshal(details)
+	if err != nil {
 		handleErr(method, err, w)
 	}
+
+	w.Header().Set(contentType, applicationJson)
+	_, _ = w.Write(marshal)
 }
 
-func (crontab *Crontab) httpEnable(token string) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		method := "httpEnable"
-		err := tokenValid(token, r)
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
-
-		name, err := parameter(nameLiteral, r)
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
-
-		err = crontab.Enable(name)
+func (crontab *Crontab) httpDisable(w http.ResponseWriter, r *http.Request) {
+	method := "httpDisable"
+	name, err := parameter(nameLiteral, r)
+	if err != nil {
 		handleErr(method, err, w)
+		return
 	}
+
+	err = crontab.Disable(name)
+	handleErr(method, err, w)
 }
 
-func (crontab *Crontab) httpSuspend(token string) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		method := "httpSuspend"
-		err := tokenValid(token, r)
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
-
-		err = crontab.Suspend()
+func (crontab *Crontab) httpEnable(w http.ResponseWriter, r *http.Request) {
+	method := "httpEnable"
+	name, err := parameter(nameLiteral, r)
+	if err != nil {
 		handleErr(method, err, w)
+		return
 	}
+
+	err = crontab.Enable(name)
+	handleErr(method, err, w)
 }
 
-func (crontab *Crontab) httpStartup(token string) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		method := "httpStartup"
-		err := tokenValid(token, r)
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
+func (crontab *Crontab) httpSuspend(w http.ResponseWriter) {
+	method := "httpSuspend"
 
-		err = crontab.Startup()
-		handleErr(method, err, w)
-	}
+	err := crontab.Suspend()
+	handleErr(method, err, w)
 }
 
-func (crontab *Crontab) httpContinue(token string) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		method := "httpContinue"
-		err := tokenValid(token, r)
-		if err != nil {
-			handleErr(method, err, w)
-			return
-		}
+func (crontab *Crontab) httpStartup(w http.ResponseWriter) {
+	method := "httpStartup"
 
-		err = crontab.Continue()
-		handleErr(method, err, w)
-	}
+	err := crontab.Startup()
+	handleErr(method, err, w)
+}
+
+func (crontab *Crontab) httpContinue(w http.ResponseWriter) {
+	method := "httpContinue"
+
+	err := crontab.Continue()
+	handleErr(method, err, w)
 }
 
 func parameter(name string, r *http.Request) (string, error) {
 	values := r.URL.Query()
 	val, ok := values[name]
 	if !ok || len(val) < 1 {
-		return "", parameterNotFoundErr
+		return "", errors.New(fmt.Sprintf(`parameter "%s" not found`, name))
 	}
 
 	return val[0], nil

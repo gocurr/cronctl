@@ -8,14 +8,14 @@ import (
 )
 
 var (
-	jobsNotSetErr         = errors.New("jobs not set")
-	crontabNotMappedErr   = errors.New("crontab not Mapped")
-	nameNotFoundErr       = errors.New("name not found")
-	cronNotFiredErr       = errors.New("cron not fired")
-	idNotFoundErr         = errors.New("id not found")
-	jobAlreadyEnabledErr  = errors.New("job already enabled")
-	jobAlreadyRunningErr  = errors.New("job already running")
-	cronAlreadyStoppedErr = errors.New("cron already stopped")
+	jobsNotSetErr           = errors.New("jobs not set")
+	crontabNotMappedErr     = errors.New("crontab not Mapped")
+	nameNotFoundErr         = errors.New("name not found")
+	cronNotFiredErr         = errors.New("cron not fired")
+	idNotFoundErr           = errors.New("id not found")
+	jobAlreadyEnabledErr    = errors.New("job already enabled")
+	jobAlreadyRunningErr    = errors.New("job already running")
+	cronAlreadySuspendedErr = errors.New("cron already suspended")
 )
 
 type Crontab struct {
@@ -28,7 +28,7 @@ type Crontab struct {
 	fired     bool
 	cronLock  *sync.RWMutex
 	started   chan struct{}
-	stopped   chan struct{}
+	suspended chan struct{}
 }
 
 type jobinfo struct {
@@ -60,13 +60,13 @@ func Create(jobs Jobs) (*Crontab, error) {
 	}
 
 	crontab := &Crontab{
-		c:        c,
-		jobinfos: jobinfos,
-		done:     make(chan struct{}),
-		running:  false,
-		cronLock: &sync.RWMutex{},
-		started:  make(chan struct{}),
-		stopped:  make(chan struct{}),
+		c:         c,
+		jobinfos:  jobinfos,
+		done:      make(chan struct{}),
+		running:   false,
+		cronLock:  &sync.RWMutex{},
+		started:   make(chan struct{}),
+		suspended: make(chan struct{}),
 	}
 
 	crontab.jobinfos_ = make([]*jobinfo, len(jobinfos))
@@ -113,7 +113,7 @@ func (crontab *Crontab) doStart() {
 	select {
 	case <-crontab.done:
 		crontab.running = false
-		crontab.stopped <- struct{}{}
+		crontab.suspended <- struct{}{}
 	}
 }
 
@@ -126,15 +126,15 @@ func (crontab *Crontab) Suspend() error {
 	defer crontab.cronLock.Unlock()
 
 	if !crontab.running {
-		return cronAlreadyStoppedErr
+		return cronAlreadySuspendedErr
 	}
 
 	crontab.done <- struct{}{}
 
 	// wait for notification
 	select {
-	case <-crontab.stopped:
-		log.Info("cron has been stopped")
+	case <-crontab.suspended:
+		log.Info("cron has been suspended")
 	}
 	return nil
 }
