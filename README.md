@@ -1,49 +1,91 @@
-crontab
+# cronctl
 
-`crontab` is an enhance tool for [cron](https://github.com/robfig/cron).
+To download, run:
 
-It's also written in go, with enhance functions:
+```bash
+go get -u github.com/gocurr/cronctl
+```
 
-# Details
+Import it in your program as:
 
-List running jobs in `crontab` container.
+```go
+import "github.com/gocurr/cronctl"
+```
 
-# Start
+It requires Go 1.11 or later due to usage of Go Modules.
 
-Start Mapped jobs.
+- To start a crontab:
 
-# Continue
+```go
+// create jobs
+jobs := map[string]Job{
+"demo1": {Spec: "*/1 * * * * ?", Fn: Counter()},
+"demo2": {Spec: "*/2 * * * * ?", Fn: Counter2()},
+}
 
-Continue Mapped jobs.
+// create a crontab
+crontab, err := Create(jobs)
+```
 
-# Suspend
+```go
+// setup http controller
+token := "abc"
+path := "/inn  er-access"
+crontab.HttpControl(path, token)
 
-Immediately Suspends all the jobs.
+// startup crontab
+err := crontab.Startup()
+```
 
-# Enable
+### The `crontab` has enhanced methods:
 
-Immediately Readds the job.
+- `Details`: List running jobs.
 
-# Disable
+- `Start`: Start Mapped jobs.
 
-Immediately Removes jhe job.
+- `Continue`: Continue Mapped jobs.
 
-## httpstart
+- `Suspend`: Immediately Suspends all the jobs.
 
+- `Enable`: Immediately Readds the job.
+
+- `Disable`: Immediately Removes jhe job.
+
+You can `Start`|`Continue`|`Suspend`|`Enable`|`Disable` the `crontab` anytime.
+
+```go
+err := crontab.Suspend()
+```
+
+```go
+err := crontab.Continue()
+```
+
+```go
+err := crontab.Disable("demo")
+```
+
+```go
+err := crontab.Enable("demo")
+```
+
+### http-functions
+
+We also provide http functions to control `crontab` by http call, e.g.
+
+```
+httpstart:
 curl http://localhost:9090/inner/cron-control?token=xxx\&type=start
 
-## httpsuspend
-
+httpsuspend:
 curl http://localhost:9090/inner/cron-control?token=xxx\&type=suspend
 
-## httpenable
-
+httpenable:
 curl http://localhost:9090/inner/cron-control?token=xxx\&type=enable\&name=demo1
 
-## httpdisable
-
+httpdisable:
 http://localhost:9090/inner/cron-control?token=xxx\&type=disable\&name=demo1
 
-## httpdetails
-
+httpdetails:
 http://localhost:9090/inner/cron-control?token=xxx\&type=details
+```
