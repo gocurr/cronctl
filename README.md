@@ -30,7 +30,7 @@ crontab, err := cronctl.Create(jobs)
 ```go
 // setup http controller
 token := "abc"
-path := "/inn  er-access"
+path := "/inner-access"
 crontab.HttpControl(path, token)
 
 // startup crontab
@@ -75,17 +75,17 @@ We also provide http functions to control `crontab` by http call, e.g.
 
 ```
 httpstart:
-curl http://localhost:9090/inner/cron-control?token=xxx\&type=start
+curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=start
 
 httpsuspend:
-curl http://localhost:9090/inner/cron-control?token=xxx\&type=suspend
+curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=suspend
 
 httpenable:
-curl http://localhost:9090/inner/cron-control?token=xxx\&type=enable\&name=demo1
+curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=enable\&name=demo1
 
 httpdisable:
-http://localhost:9090/inner/cron-control?token=xxx\&type=disable\&name=demo1
+http://localhost:9090/inner-access/cron-control?token=xxx\&type=disable\&name=demo1
 
 httpdetails:
-http://localhost:9090/inner/cron-control?token=xxx\&type=details
+http://localhost:9090/inner-access/cron-control?token=xxx\&type=details
 ```
