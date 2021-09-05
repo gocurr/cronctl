@@ -5,6 +5,7 @@ import (
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -18,12 +19,26 @@ var (
 	tokenNotValidErr     = errors.New("token not valid")
 )
 
-func (crontab *Crontab) HttpControl(token string) {
-	http.HandleFunc("/crontab-start", crontab.httpStartup(token))
-	http.HandleFunc("/crontab-stop", crontab.httpStop(token))
-	http.HandleFunc("/crontab-disable", crontab.httpDisable(token))
-	http.HandleFunc("/crontab-enable", crontab.httpEnable(token))
-	http.HandleFunc("/crontab-details", crontab.httpDetails(token))
+func (crontab *Crontab) HttpControl(path, token string) {
+	basePath := base(path)
+	http.HandleFunc(basePath+"crontab-start", crontab.httpStartup(token))
+	http.HandleFunc(basePath+"crontab-stop", crontab.httpStop(token))
+	http.HandleFunc(basePath+"crontab-disable", crontab.httpDisable(token))
+	http.HandleFunc(basePath+"crontab-enable", crontab.httpEnable(token))
+	http.HandleFunc(basePath+"crontab-details", crontab.httpDetails(token))
+}
+
+func base(path string) string {
+	path = strings.Trim(path, "")
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+
+	if !strings.HasSuffix(path, "/") {
+		path = path + "/"
+	}
+
+	return path
 }
 
 func (crontab *Crontab) httpDetails(token string) func(w http.ResponseWriter, r *http.Request) {
