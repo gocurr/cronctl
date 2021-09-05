@@ -28,11 +28,6 @@ crontab, err := cronctl.Create(jobs)
 ```
 
 ```go
-// setup http controller
-token := "xxx"
-path := "/inner-access"
-crontab.HttpControl(path, token)
-
 // startup crontab
 err := crontab.Startup()
 ```
@@ -72,6 +67,12 @@ err := crontab.Enable("demo")
 ### http-functions
 
 We also provide http functions to control `crontab` by http call, e.g.
+```go
+// setup http controller
+token := "xxx"
+path := "/inner-access"
+crontab.HttpControl(path, token)
+```
 
 ```
 httpstart:
