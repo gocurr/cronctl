@@ -117,7 +117,7 @@ func (crontab *Crontab) doStart() {
 	}
 }
 
-func (crontab *Crontab) Stop() error {
+func (crontab *Crontab) Suspend() error {
 	crontab.cronLock.Lock()
 	defer crontab.cronLock.Unlock()
 

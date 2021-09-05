@@ -25,7 +25,7 @@ var (
 func (crontab *Crontab) HttpControl(path, token string) {
 	basePath := base(path)
 	http.HandleFunc(basePath+"crontab-start", crontab.httpStartup(token))
-	http.HandleFunc(basePath+"crontab-stop", crontab.httpStop(token))
+	http.HandleFunc(basePath+"crontab-suspend", crontab.httpSuspend(token))
 	http.HandleFunc(basePath+"crontab-disable", crontab.httpDisable(token))
 	http.HandleFunc(basePath+"crontab-enable", crontab.httpEnable(token))
 	http.HandleFunc(basePath+"crontab-details", crontab.httpDetails(token))
@@ -116,16 +116,16 @@ func (crontab *Crontab) httpEnable(token string) func(w http.ResponseWriter, r *
 	}
 }
 
-func (crontab *Crontab) httpStop(token string) func(w http.ResponseWriter, r *http.Request) {
+func (crontab *Crontab) httpSuspend(token string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		method := "httpStop"
+		method := "httpSuspend"
 		err := tokenValid(token, r)
 		if err != nil {
 			handleErr(method, err, w)
 			return
 		}
 
-		err = crontab.Stop()
+		err = crontab.Suspend()
 		handleErr(method, err, w)
 	}
 }
