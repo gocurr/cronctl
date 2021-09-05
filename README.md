@@ -9,10 +9,10 @@ It's also written in go, with enhance functions:
 List running jobs in `crontab` container.
 
 # Start
-Start or Restart Mapped jobs.
+Start or Continue Mapped jobs.
 
-# Stop
-Immediately Stops all the jobs in `crontab` container.
+# Suspend
+Immediately Suspends all the jobs in `crontab` container.
 
 # Enable
 Immediately Readds the job to `crontab` container.
