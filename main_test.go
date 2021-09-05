@@ -8,9 +8,9 @@ import (
 
 func Test_Main(t *testing.T) {
 	// create jobs
-	var jobs = Jobs{
-		{Name: "demo1", Spec: "*/1 * * * * ?", Fn: Counter()},
-		{Name: "demo2", Spec: "*/2 * * * * ?", Fn: Counter2()},
+	var jobs = map[string]Job{
+		"demo1": {Spec: "*/1 * * * * ?", Fn: Counter()},
+		"demo2": {Spec: "*/2 * * * * ?", Fn: Counter2()},
 	}
 
 	// create a crontab
