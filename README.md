@@ -29,7 +29,7 @@ crontab, err := cronctl.Create(jobs)
 
 ```go
 // setup http controller
-token := "abc"
+token := "xxx"
 path := "/inner-access"
 crontab.HttpControl(path, token)
 
@@ -79,6 +79,9 @@ curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=start
 
 httpsuspend:
 curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=suspend
+
+httpcontinue:
+curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=continue
 
 httpenable:
 curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=enable\&name=demo1
