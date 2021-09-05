@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	jobsNotSetErr         = errors.New("jobs not set")
 	crontabNotMappedErr   = errors.New("crontab not Mapped")
 	nameNotFoundErr       = errors.New("name not found")
 	cronNotFiredErr       = errors.New("cron not fired")
@@ -38,6 +39,10 @@ type jobinfo struct {
 }
 
 func Create(jobs Jobs) (*Crontab, error) {
+	if len(jobs) == 0 {
+		return nil, jobsNotSetErr
+	}
+
 	// get jobinfos with jobs
 	jobinfos := jobinfos(jobs)
 	if jobinfos == nil {

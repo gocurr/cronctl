@@ -10,8 +10,11 @@ type Jobs []struct {
 }
 
 func jobinfos(jobs Jobs) []*jobinfo {
-	var jobinfos []*jobinfo
+	if len(nameFun) == 0 {
+		return nil
+	}
 
+	var jobinfos []*jobinfo
 	for _, job := range jobs {
 		fn := fn(job.Name)
 		if fn != nil {
