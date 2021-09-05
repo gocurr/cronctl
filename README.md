@@ -30,20 +30,20 @@ Immediately Removes jhe job.
 
 ## httpstart
 
-curl http://localhost:9090/crontab-start?token=xxx
+curl http://localhost:9090/inner/cron-control?token=xxx\&type=start
 
-## httpstop
+## httpsuspend
 
-curl http://localhost:9090/crontab-stop?token=xxx
+curl http://localhost:9090/inner/cron-control?token=xxx\&type=suspend
 
 ## httpenable
 
-curl http://localhost:9090/crontab-enable?name=demo1\&token=xxx
+curl http://localhost:9090/inner/cron-control?token=xxx\&type=enable\&name=demo1
 
 ## httpdisable
 
-curl http://localhost:9090/crontab-disable?name=demo1\&token=xxx
+http://localhost:9090/inner/cron-control?token=xxx\&type=disable\&name=demo1
 
 ## httpdetails
 
-curl http://localhost:9090/crontab-details?token=xxx
+http://localhost:9090/inner/cron-control?token=xxx\&type=details
