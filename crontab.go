@@ -79,7 +79,6 @@ func Create(jobs Jobs) (*Crontab, error) {
 		c:         c,
 		jobinfos:  jobinfos,
 		done:      make(chan struct{}),
-		running:   false,
 		cronLock:  &sync.RWMutex{},
 		started:   make(chan struct{}),
 		suspended: make(chan struct{}),
