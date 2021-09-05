@@ -47,6 +47,10 @@ err := crontab.Startup()
 You can `Start`|`Continue`|`Suspend`|`Enable`|`Disable` the `crontab` anytime.
 
 ```go
+details, err := crontab.Details()
+```
+
+```go
 err := crontab.Suspend()
 ```
 
