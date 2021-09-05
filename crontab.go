@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/robfig/cron/v3"
-	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -111,7 +110,7 @@ func (crontab *Crontab) Startup() error {
 
 	select {
 	case <-crontab.started:
-		log.Info("cron has been started")
+		crontab.logger.Info("cron has been started")
 	}
 	return nil
 }
@@ -148,7 +147,7 @@ func (crontab *Crontab) Suspend() error {
 	// wait for notification
 	select {
 	case <-crontab.suspended:
-		log.Info("cron has been suspended")
+		crontab.logger.Info("cron has been suspended")
 	}
 	return nil
 }
