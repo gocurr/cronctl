@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	crontabNotMappedErr   = errors.New("crontab not Mapped")
 	nameNotFoundErr       = errors.New("name not found")
 	cronNotFiredErr       = errors.New("cron not fired")
 	idNotFoundErr         = errors.New("id not found")
@@ -40,7 +41,7 @@ func Create(jobs Jobs) (*Crontab, error) {
 	// get jobinfos with jobs
 	jobinfos := jobinfos(jobs)
 	if jobinfos == nil {
-		return nil, errors.New("crontab is not Mapped")
+		return nil, crontabNotMappedErr
 	}
 
 	c := cron.New(cron.WithParser(cron.NewParser(
