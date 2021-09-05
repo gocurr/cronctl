@@ -9,7 +9,6 @@ import (
 
 var (
 	jobsNotSetErr           = errors.New("jobs not set")
-	crontabNotMappedErr     = errors.New("crontab not Mapped")
 	nameNotFoundErr         = errors.New("name not found")
 	cronNotFiredErr         = errors.New("cron not fired")
 	idNotFoundErr           = errors.New("id not found")
@@ -41,34 +40,30 @@ type jobinfo struct {
 type Jobs []struct {
 	Name string `json:"name"`
 	Spec string `json:"spec"`
+	Fn   func() `json:"-"`
 }
 
-func jobinfos(jobs Jobs, nameFuns map[string]func()) []*jobinfo {
+func jobinfos(jobs Jobs) []*jobinfo {
 	var jobinfos []*jobinfo
 	for _, job := range jobs {
-		if fn, ok := nameFuns[job.Name]; ok {
-			jobinfos = append(jobinfos, &jobinfo{
-				Name: job.Name,
-				Spec: job.Spec,
-				Fn:   fn,
-			})
-		}
+		fn := job.Fn
+		jobinfos = append(jobinfos, &jobinfo{
+			Name: job.Name,
+			Spec: job.Spec,
+			Fn:   fn,
+		})
 	}
 
 	return jobinfos
 }
 
-func Create(jobs Jobs, nameFuns map[string]func()) (*Crontab, error) {
+func Create(jobs Jobs) (*Crontab, error) {
 	if len(jobs) == 0 {
 		return nil, jobsNotSetErr
 	}
 
-	if len(nameFuns) == 0 {
-		return nil, crontabNotMappedErr
-	}
-
 	// get jobinfos with jobs
-	jobinfos := jobinfos(jobs, nameFuns)
+	jobinfos := jobinfos(jobs)
 
 	c := cron.New(cron.WithParser(cron.NewParser(
 		cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor,

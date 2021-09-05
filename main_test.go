@@ -9,16 +9,12 @@ import (
 func Test_Main(t *testing.T) {
 	// create jobs
 	var jobs = Jobs{
-		{Name: "demo1", Spec: "*/1 * * * * ?"},
-		{Name: "demo2", Spec: "*/2 * * * * ?"},
+		{Name: "demo1", Spec: "*/1 * * * * ?", Fn: Counter()},
+		{Name: "demo2", Spec: "*/2 * * * * ?", Fn: Counter2()},
 	}
 
-	nameFuns := make(map[string]func())
-	nameFuns["demo1"] = Counter()
-	nameFuns["demo2"] = Counter2()
-
 	// create a crontab
-	crontab, err := Create(jobs, nameFuns)
+	crontab, err := Create(jobs)
 	if err != nil {
 		panic(err)
 	}
