@@ -14,7 +14,7 @@ func Test_Main(t *testing.T) {
 	}
 
 	// create a crontab
-	crontab, err := Create(jobs)
+	crontab, err := Create(jobs, DefaultLogger{})
 	if err != nil {
 		panic(err)
 	}
@@ -22,7 +22,7 @@ func Test_Main(t *testing.T) {
 	// setup http controller
 	token := "abc"
 	path := "/inn  er-access"
-	crontab.HttpControl(path, token)
+	crontab.HttpControl(path, token, true)
 
 	// startup crontab
 	err = crontab.Startup()

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"regexp"
 	"strings"
@@ -33,41 +32,41 @@ var (
 	tokenNotValidErr = errors.New("token not valid")
 )
 
-func (crontab *Crontab) HttpControl(path, token string) {
+func (crontab *Crontab) HttpControl(path, token string, logging bool) {
 	basePath := base(path)
-	http.HandleFunc(basePath+cronControlLiteral, httpCronCtrl(crontab, token))
+	http.HandleFunc(basePath+cronControlLiteral, httpCronCtrl(crontab, token, logging))
 }
 
-func httpCronCtrl(crontab *Crontab, token string) func(w http.ResponseWriter, r *http.Request) {
+func httpCronCtrl(crontab *Crontab, token string, logging bool) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		method := "httpCronCtrl"
 		err := tokenValid(token, r)
 		if err != nil {
-			handleErr(method, err, w)
+			crontab.handleErr(method, err, w, logging)
 			return
 		}
 
 		typ, err := parameter("type", r)
 		if err != nil {
-			handleErr(method, err, w)
+			crontab.handleErr(method, err, w, logging)
 			return
 		}
 
 		switch typ {
 		case startLiteral:
-			crontab.httpStartup(w)
+			crontab.httpStartup(w, logging)
 		case continueLiteral:
-			crontab.httpContinue(w)
+			crontab.httpContinue(w, logging)
 		case suspendLiteral:
-			crontab.httpSuspend(w)
+			crontab.httpSuspend(w, logging)
 		case detailLiteral:
-			crontab.httpDetails(w)
+			crontab.httpDetails(w, logging)
 		case enableLiteral:
-			crontab.httpEnable(w, r)
+			crontab.httpEnable(w, r, logging)
 		case disableLiteral:
-			crontab.httpDisable(w, r)
+			crontab.httpDisable(w, r, logging)
 		default:
-			handleErr(method, unknownTypeErr, w)
+			crontab.handleErr(method, unknownTypeErr, w, logging)
 		}
 	}
 }
@@ -92,66 +91,66 @@ func base(path string) string {
 	return path
 }
 
-func (crontab *Crontab) httpDetails(w http.ResponseWriter) {
+func (crontab *Crontab) httpDetails(w http.ResponseWriter, logging bool) {
 	method := "httpDetails"
 	details, err := crontab.Details()
 	if err != nil {
-		handleErr(method, err, w)
+		crontab.handleErr(method, err, w, logging)
 		return
 	}
 
 	marshal, err := json.Marshal(details)
 	if err != nil {
-		handleErr(method, err, w)
+		crontab.handleErr(method, err, w, logging)
 	}
 
 	w.Header().Set(contentType, applicationJson)
 	_, _ = w.Write(marshal)
 }
 
-func (crontab *Crontab) httpDisable(w http.ResponseWriter, r *http.Request) {
+func (crontab *Crontab) httpDisable(w http.ResponseWriter, r *http.Request, logging bool) {
 	method := "httpDisable"
 	name, err := parameter(nameLiteral, r)
 	if err != nil {
-		handleErr(method, err, w)
+		crontab.handleErr(method, err, w, logging)
 		return
 	}
 
 	err = crontab.Disable(name)
-	handleErr(method, err, w)
+	crontab.handleErr(method, err, w, logging)
 }
 
-func (crontab *Crontab) httpEnable(w http.ResponseWriter, r *http.Request) {
+func (crontab *Crontab) httpEnable(w http.ResponseWriter, r *http.Request, logging bool) {
 	method := "httpEnable"
 	name, err := parameter(nameLiteral, r)
 	if err != nil {
-		handleErr(method, err, w)
+		crontab.handleErr(method, err, w, logging)
 		return
 	}
 
 	err = crontab.Enable(name)
-	handleErr(method, err, w)
+	crontab.handleErr(method, err, w, logging)
 }
 
-func (crontab *Crontab) httpSuspend(w http.ResponseWriter) {
+func (crontab *Crontab) httpSuspend(w http.ResponseWriter, logging bool) {
 	method := "httpSuspend"
 
 	err := crontab.Suspend()
-	handleErr(method, err, w)
+	crontab.handleErr(method, err, w, logging)
 }
 
-func (crontab *Crontab) httpStartup(w http.ResponseWriter) {
+func (crontab *Crontab) httpStartup(w http.ResponseWriter, logging bool) {
 	method := "httpStartup"
 
 	err := crontab.Startup()
-	handleErr(method, err, w)
+	crontab.handleErr(method, err, w, logging)
 }
 
-func (crontab *Crontab) httpContinue(w http.ResponseWriter) {
+func (crontab *Crontab) httpContinue(w http.ResponseWriter, logging bool) {
 	method := "httpContinue"
 
 	err := crontab.Continue()
-	handleErr(method, err, w)
+	crontab.handleErr(method, err, w, logging)
 }
 
 func parameter(name string, r *http.Request) (string, error) {
@@ -173,11 +172,13 @@ func tokenValid(token string, r *http.Request) error {
 	return nil
 }
 
-func handleErr(method string, err error, w http.ResponseWriter) {
+func (crontab *Crontab) handleErr(method string, err error, w http.ResponseWriter, logging bool) {
 	msg := "ok"
 	if err != nil {
 		msg = err.Error()
-		log.Errorf("%v: %v", method, err)
+		if logging {
+			crontab.logger.Error(err, method)
+		}
 	}
 	_, _ = w.Write([]byte(msg))
 }

@@ -2,6 +2,7 @@ package cronctl
 
 import (
 	"errors"
+	"fmt"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	"sync"
@@ -9,15 +10,14 @@ import (
 
 var (
 	jobsNotSetErr           = errors.New("jobs not set")
-	nameNotFoundErr         = errors.New("name not found")
 	cronNotFiredErr         = errors.New("cron not fired")
-	jobAlreadyEnabledErr    = errors.New("job already enabled")
 	jobAlreadyRunningErr    = errors.New("job already running")
 	cronAlreadySuspendedErr = errors.New("cron already suspended")
 )
 
 type Crontab struct {
 	c        *cron.Cron
+	logger   cron.Logger
 	jobinfos map[string]jobinfo
 	// back up jobinfos when fired
 	jobinfos_ map[string]jobinfo
@@ -55,7 +55,7 @@ func jobinfos(jobs map[string]Job) map[string]jobinfo {
 	return jobinfos
 }
 
-func Create(jobs map[string]Job) (*Crontab, error) {
+func Create(jobs map[string]Job, logger cron.Logger) (*Crontab, error) {
 	if len(jobs) == 0 {
 		return nil, jobsNotSetErr
 	}
@@ -65,7 +65,7 @@ func Create(jobs map[string]Job) (*Crontab, error) {
 
 	c := cron.New(cron.WithParser(cron.NewParser(
 		cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor,
-	)), cron.WithChain(cron.Recover(CronLogger{})))
+	)), cron.WithChain(cron.Recover(logger)))
 
 	// add jobinfos to c
 	for name, info := range jobinfos {
@@ -83,6 +83,7 @@ func Create(jobs map[string]Job) (*Crontab, error) {
 
 	crontab := &Crontab{
 		c:         c,
+		logger:    logger,
 		jobinfos:  jobinfos,
 		done:      make(chan struct{}),
 		cronLock:  &sync.RWMutex{},
@@ -162,7 +163,7 @@ func (crontab *Crontab) Disable(name string) error {
 
 	job, ok := crontab.jobinfos[name]
 	if !ok {
-		return nameNotFoundErr
+		return errors.New(fmt.Sprintf("name: %s not found", name))
 	}
 
 	crontab.c.Remove(job.Id)
@@ -180,12 +181,12 @@ func (crontab *Crontab) Enable(name string) error {
 
 	jobinfo, ok := crontab.jobinfos[name]
 	if ok {
-		return jobAlreadyEnabledErr
+		return errors.New(fmt.Sprintf("job: %v already enabled", name))
 	}
 
 	jobinfo, ok = crontab.jobinfos_[name]
 	if !ok {
-		return nameNotFoundErr
+		return errors.New(fmt.Sprintf("name: %s not found", name))
 	}
 
 	newId, err := crontab.c.AddFunc(jobinfo.Spec, jobinfo.Fn)

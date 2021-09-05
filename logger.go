@@ -4,13 +4,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type CronLogger struct {
+type DefaultLogger struct {
 }
 
-func (c CronLogger) Info(msg string, keysAndValues ...interface{}) {
-	log.Infof("%s: %v", msg, keysAndValues)
+func (l DefaultLogger) Info(msg string, _ ...interface{}) {
+	log.Infof("%s", msg)
 }
 
-func (c CronLogger) Error(err error, msg string, keysAndValues ...interface{}) {
-	log.Errorf("%s %v %v", msg, err, keysAndValues)
+func (l DefaultLogger) Error(err error, msg string, _ ...interface{}) {
+	log.Errorf("%s %v", msg, err)
 }
