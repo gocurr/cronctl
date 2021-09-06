@@ -37,6 +37,11 @@ func (crontab *Crontab) HttpControl(path, token string, logging bool) {
 	http.HandleFunc(basePath+cronControlLiteral, httpCronCtrl(crontab, token, logging))
 }
 
+func (crontab *Crontab) HttpServerMuxControl(mux *http.ServeMux, path, token string, logging bool) {
+	basePath := base(path)
+	mux.HandleFunc(basePath+cronControlLiteral, httpCronCtrl(crontab, token, logging))
+}
+
 func httpCronCtrl(crontab *Crontab, token string, logging bool) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		method := "httpCronCtrl"
