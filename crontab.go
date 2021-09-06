@@ -167,6 +167,7 @@ func (crontab *Crontab) Disable(name string) error {
 
 	crontab.c.Remove(job.Id)
 	delete(crontab.jobinfos, job.Name)
+	crontab.logger.Info(fmt.Sprintf("job: %s has been disabled", name))
 	return nil
 }
 
@@ -195,6 +196,7 @@ func (crontab *Crontab) Enable(name string) error {
 	jobinfo.Id = newId
 
 	crontab.jobinfos[name] = jobinfo
+	crontab.logger.Info(fmt.Sprintf("job: %s has been enabled", name))
 	return nil
 }
 
