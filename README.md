@@ -78,22 +78,32 @@ crontab.HttpControl(path, token, true)
 http.ListenAndServe(":9090", nil)
 ```
 
-```
-httpstart:
+- httpstart:
+```bash
 curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=start
+```
 
-httpsuspend:
+- httpsuspend:
+```bash
 curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=suspend
+```
 
-httpcontinue:
+- httpcontinue:
+```bash
 curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=continue
+```
 
-httpenable:
+- httpenable:
+```bash
 curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=enable\&name=demo1
+```
 
-httpdisable:
-http://localhost:9090/inner-access/cron-control?token=xxx\&type=disable\&name=demo1
+- httpdisable:
+```bash
+curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=disable\&name=demo1
+```
 
-httpdetails:
-http://localhost:9090/inner-access/cron-control?token=xxx\&type=details
+- httpdetails:
+```bash
+curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=details
 ```
