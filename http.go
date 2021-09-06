@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	cronControlLiteral = "cron-control"
 	startLiteral       = "start"
 	continueLiteral    = "continue"
 	suspendLiteral     = "suspend"
