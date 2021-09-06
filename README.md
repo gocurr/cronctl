@@ -18,7 +18,7 @@ It requires Go 1.11 or later due to usage of Go Modules.
 
 ```go
 // create jobs
-jobs := map[string]Job{
+jobs := map[string]cronctl.Job{
 "demo1": {Spec: "*/1 * * * * ?", Fn: Counter()},
 "demo2": {Spec: "*/2 * * * * ?", Fn: Counter2()},
 }
