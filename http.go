@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 )
 
 const (
@@ -32,17 +31,7 @@ var (
 	tokenNotValidErr = errors.New("token not valid")
 )
 
-func (crontab *Crontab) HttpControl(path, token string, logging bool) {
-	basePath := base(path)
-	http.HandleFunc(basePath+cronControlLiteral, httpCronCtrl(crontab, token, logging))
-}
-
-func (crontab *Crontab) HttpServerMuxControl(mux *http.ServeMux, path, token string, logging bool) {
-	basePath := base(path)
-	mux.HandleFunc(basePath+cronControlLiteral, httpCronCtrl(crontab, token, logging))
-}
-
-func httpCronCtrl(crontab *Crontab, token string, logging bool) func(w http.ResponseWriter, r *http.Request) {
+func (crontab *Crontab) HttpCronCtrlFunc(token string, logging bool) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		method := "httpCronCtrl"
 		err := tokenValid(token, r)
@@ -74,26 +63,6 @@ func httpCronCtrl(crontab *Crontab, token string, logging bool) func(w http.Resp
 			crontab.handleErr(method, unknownTypeErr, w, logging)
 		}
 	}
-}
-
-func compressStr(str string) string {
-	if str == "" {
-		return ""
-	}
-	return reg.ReplaceAllString(str, "")
-}
-
-func base(path string) string {
-	path = compressStr(path)
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-
-	if !strings.HasSuffix(path, "/") {
-		path = path + "/"
-	}
-
-	return path
 }
 
 func (crontab *Crontab) httpDetails(w http.ResponseWriter, logging bool) {
