@@ -80,30 +80,30 @@ http.ListenAndServe(":9090", nil)
 
 - httpstart:
 ```bash
-curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=start
+curl http://localhost:9090/inner-access?token=xxx\&type=start
 ```
 
 - httpsuspend:
 ```bash
-curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=suspend
+curl http://localhost:9090/inner-access?token=xxx\&type=suspend
 ```
 
 - httpcontinue:
 ```bash
-curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=continue
+curl http://localhost:9090/inner-access?token=xxx\&type=continue
 ```
 
 - httpenable:
 ```bash
-curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=enable\&name=demo1
+curl http://localhost:9090/inner-access?token=xxx\&type=enable\&name=demo1
 ```
 
 - httpdisable:
 ```bash
-curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=disable\&name=demo1
+curl http://localhost:9090/inner-access?token=xxx\&type=disable\&name=demo1
 ```
 
 - httpdetails:
 ```bash
-curl http://localhost:9090/inner-access/cron-control?token=xxx\&type=details
+curl http://localhost:9090/inner-access?token=xxx\&type=details
 ```
