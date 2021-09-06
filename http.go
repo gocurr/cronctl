@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
 )
 
 const (
@@ -25,8 +24,6 @@ const (
 )
 
 var (
-	reg = regexp.MustCompile("\\s+")
-
 	unknownTypeErr   = errors.New("unknow type")
 	tokenNotValidErr = errors.New("token not valid")
 )
