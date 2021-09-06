@@ -24,7 +24,7 @@ jobs := map[string]Job{
 }
 
 // create a crontab
-crontab, err := cronctl.Create(jobs)
+crontab, err := cronctl.Create(jobs, cronctl.DefaultLogger{})
 
 // startup crontab
 err := crontab.Startup()
@@ -73,7 +73,7 @@ We also provide http functions to control `crontab` by http call, e.g.
 // setup http controller
 token := "xxx"
 path := "/inner-access"
-crontab.HttpControl(path, token)
+crontab.HttpControl(path, token, true)
 
 http.ListenAndServe(":9090", nil)
 ```
