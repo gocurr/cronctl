@@ -71,11 +71,10 @@ err := crontab.Enable("demo")
 We also provide http functions to control `crontab` by http call, e.g.
 ```go
 // setup http controller
-token := "xxx"
+token := "abc"
 path := "/inner-access"
-crontab.HttpControl(path, token, true)
-
-http.ListenAndServe(":9090", nil)
+ctrlFunc := crontab.HttpCronCtrlFunc(token, true)
+http.HandleFunc(path, ctrlFunc)
 ```
 
 - httpstart:
