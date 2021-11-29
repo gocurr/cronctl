@@ -21,7 +21,7 @@ func Test_Main(t *testing.T) {
 
 	// setup http controller
 	token := "abc"
-	path := "/inn  er-access"
+	path := "/inner-access"
 	ctrlFunc := crontab.HttpCronCtrlFunc(token, true)
 	http.HandleFunc(path, ctrlFunc)
 

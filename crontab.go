@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	jobsNotSetErr           = errors.New("jobs not set")
-	cronNotFiredErr         = errors.New("cron not fired")
-	jobAlreadyRunningErr    = errors.New("job already running")
-	cronAlreadySuspendedErr = errors.New("cron already suspended")
+	jobsNotSetErr           = errors.New("jobs is not set")
+	cronNotFiredErr         = errors.New("crontab is not fired")
+	jobAlreadyRunningErr    = errors.New("job was already running")
+	cronAlreadySuspendedErr = errors.New("crontab was already suspended")
 )
 
 type Crontab struct {
@@ -147,7 +147,7 @@ func (crontab *Crontab) Suspend() error {
 	// wait for notification
 	select {
 	case <-crontab.suspended:
-		crontab.logger.Info("cron has been suspended")
+		crontab.logger.Info("crontab is suspended...")
 	}
 	return nil
 }
