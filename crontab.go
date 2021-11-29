@@ -91,7 +91,7 @@ func Create(jobs map[string]Job, logger cron.Logger) (*Crontab, error) {
 	}
 
 	crontab.jobinfos_ = make(map[string]jobinfo)
-	//backup jobinfos
+	// backup jobinfos
 	for k, v := range jobinfos {
 		crontab.jobinfos_[k] = v
 	}
@@ -110,7 +110,7 @@ func (crontab *Crontab) Startup() error {
 
 	select {
 	case <-crontab.started:
-		crontab.logger.Info("cron has been started")
+		crontab.logger.Info("crontab is running...")
 	}
 	return nil
 }

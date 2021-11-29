@@ -8,12 +8,12 @@ import (
 )
 
 const (
-	startLiteral       = "start"
-	continueLiteral    = "continue"
-	suspendLiteral     = "suspend"
-	disableLiteral     = "disable"
-	enableLiteral      = "enable"
-	detailLiteral      = "details"
+	startLiteral    = "start"
+	continueLiteral = "continue"
+	suspendLiteral  = "suspend"
+	disableLiteral  = "disable"
+	enableLiteral   = "enable"
+	detailLiteral   = "details"
 
 	nameLiteral  = "name"
 	tokenLiteral = "token"
@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	unknownTypeErr   = errors.New("unknow type")
+	unknownTypeErr   = errors.New("unknown type")
 	tokenNotValidErr = errors.New("token not valid")
 )
 
