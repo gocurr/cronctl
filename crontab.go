@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	jobsNotSetErr           = errors.New("jobs is not set")
+	jobsNotSetErr           = errors.New("jobs are not set")
 	cronNotFiredErr         = errors.New("crontab is not fired")
 	jobAlreadyRunningErr    = errors.New("job was already running")
 	cronAlreadySuspendedErr = errors.New("crontab was already suspended")
