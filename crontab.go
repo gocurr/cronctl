@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	errNone      = errors.New("crontab none set")
-	errInactive  = errors.New("crontab inactive")
-	errRunning   = errors.New("crontab running")
-	errSuspended = errors.New("crontab suspended")
+	errNone      = errors.New("crontab is not set")
+	errInactive  = errors.New("crontab is inactive")
+	errRunning   = errors.New("crontab is running")
+	errSuspended = errors.New("crontab is suspended")
 )
 
 type Crontab struct {
@@ -195,7 +195,7 @@ func (crontab *Crontab) Enable(name string) error {
 	jobinfo.Id = newId
 
 	crontab.jobinfos[name] = jobinfo
-	crontab.logger.Info("job: %s has been enabled", name)
+	crontab.logger.Info(fmt.Sprintf("job: %s has been enabled", name))
 	return nil
 }
 
