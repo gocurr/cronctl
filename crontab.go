@@ -8,21 +8,20 @@ import (
 )
 
 var (
-	jobsNotSetErr           = errors.New("jobs are not set")
-	cronNotFiredErr         = errors.New("crontab is not fired")
-	jobAlreadyRunningErr    = errors.New("job was already running")
-	cronAlreadySuspendedErr = errors.New("crontab was already suspended")
+	errNone      = errors.New("crontab none set")
+	errInactive  = errors.New("crontab inactive")
+	errRunning   = errors.New("crontab running")
+	errSuspended = errors.New("crontab suspended")
 )
 
 type Crontab struct {
-	c        *cron.Cron
-	logger   cron.Logger
-	jobinfos map[string]jobinfo
-	// back up jobinfos when fired
-	jobinfos_ map[string]jobinfo
+	c         *cron.Cron
+	logger    cron.Logger
+	jobinfos  map[string]jobinfo
+	jobinfos_ map[string]jobinfo // back up jobinfos when crontab is afire
 	done      chan struct{}
 	running   bool
-	fired     bool
+	afire     bool
 	cronLock  *sync.RWMutex
 	started   chan struct{}
 	suspended chan struct{}
@@ -40,7 +39,7 @@ type Job struct {
 	Fn   func() `json:"-"`
 }
 
-func jobinfos(jobs map[string]Job) map[string]jobinfo {
+func jobInfos(jobs map[string]Job) map[string]jobinfo {
 	var jobinfos = make(map[string]jobinfo)
 	for name, job := range jobs {
 		fn := job.Fn
@@ -56,11 +55,11 @@ func jobinfos(jobs map[string]Job) map[string]jobinfo {
 
 func Create(jobs map[string]Job, logger cron.Logger) (*Crontab, error) {
 	if len(jobs) == 0 {
-		return nil, jobsNotSetErr
+		return nil, errNone
 	}
 
 	// get jobinfos with jobs
-	jobinfos := jobinfos(jobs)
+	jobinfos := jobInfos(jobs)
 
 	c := cron.New(cron.WithParser(cron.NewParser(
 		cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor,
@@ -103,7 +102,7 @@ func (crontab *Crontab) Startup() error {
 	defer crontab.cronLock.Unlock()
 
 	if crontab.running {
-		return jobAlreadyRunningErr
+		return errRunning
 	}
 
 	go crontab.doStart()
@@ -120,7 +119,7 @@ func (crontab *Crontab) doStart() {
 	defer crontab.c.Stop()
 
 	crontab.running = true
-	crontab.fired = true
+	crontab.afire = true
 	crontab.started <- struct{}{}
 
 	select {
@@ -139,7 +138,7 @@ func (crontab *Crontab) Suspend() error {
 	defer crontab.cronLock.Unlock()
 
 	if !crontab.running {
-		return cronAlreadySuspendedErr
+		return errSuspended
 	}
 
 	crontab.done <- struct{}{}
@@ -156,13 +155,13 @@ func (crontab *Crontab) Disable(name string) error {
 	crontab.cronLock.Lock()
 	defer crontab.cronLock.Unlock()
 
-	if !crontab.fired {
-		return cronNotFiredErr
+	if !crontab.afire {
+		return errInactive
 	}
 
 	job, ok := crontab.jobinfos[name]
 	if !ok {
-		return errors.New(fmt.Sprintf("name: %s not found", name))
+		return fmt.Errorf("name: %s not found", name)
 	}
 
 	crontab.c.Remove(job.Id)
@@ -175,18 +174,18 @@ func (crontab *Crontab) Enable(name string) error {
 	crontab.cronLock.Lock()
 	defer crontab.cronLock.Unlock()
 
-	if !crontab.fired {
-		return cronNotFiredErr
+	if !crontab.afire {
+		return errInactive
 	}
 
 	jobinfo, ok := crontab.jobinfos[name]
 	if ok {
-		return errors.New(fmt.Sprintf("job: %v already enabled", name))
+		return fmt.Errorf("job: %s already enabled", name)
 	}
 
 	jobinfo, ok = crontab.jobinfos_[name]
 	if !ok {
-		return errors.New(fmt.Sprintf("name: %s not found", name))
+		return fmt.Errorf("name: %s not found", name)
 	}
 
 	newId, err := crontab.c.AddFunc(jobinfo.Spec, jobinfo.Fn)
@@ -196,7 +195,7 @@ func (crontab *Crontab) Enable(name string) error {
 	jobinfo.Id = newId
 
 	crontab.jobinfos[name] = jobinfo
-	crontab.logger.Info(fmt.Sprintf("job: %s has been enabled", name))
+	crontab.logger.Info("job: %s has been enabled", name)
 	return nil
 }
 
@@ -204,8 +203,8 @@ func (crontab *Crontab) Details() (map[string]map[string]jobinfo, error) {
 	crontab.cronLock.RLock()
 	defer crontab.cronLock.RUnlock()
 
-	if !crontab.fired {
-		return nil, cronNotFiredErr
+	if !crontab.afire {
+		return nil, errInactive
 	}
 
 	return map[string]map[string]jobinfo{

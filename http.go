@@ -127,7 +127,7 @@ func parameter(name string, r *http.Request) (string, error) {
 	values := r.URL.Query()
 	val, ok := values[name]
 	if !ok || len(val) < 1 {
-		return "", errors.New(fmt.Sprintf(`parameter "%s" not found`, name))
+		return "", fmt.Errorf(`parameter "%s" not found`, name)
 	}
 
 	return val[0], nil
