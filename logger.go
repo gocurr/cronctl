@@ -1,8 +1,13 @@
 package cronctl
 
 import (
+	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 )
+
+var Logrus DefaultLogger
+
+var Discard = cron.DiscardLogger
 
 type DefaultLogger struct {
 }
