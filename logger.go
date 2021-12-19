@@ -5,17 +5,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var Logrus DefaultLogger
-
 var Discard = cron.DiscardLogger
 
-type DefaultLogger struct {
+var Logrus defaultLogger
+
+type defaultLogger struct {
 }
 
-func (l DefaultLogger) Info(msg string, _ ...interface{}) {
+func (l defaultLogger) Info(msg string, _ ...interface{}) {
 	log.Infof("%s", msg)
 }
 
-func (l DefaultLogger) Error(err error, msg string, _ ...interface{}) {
+func (l defaultLogger) Error(err error, msg string, _ ...interface{}) {
 	log.Errorf("%s %v", msg, err)
 }
