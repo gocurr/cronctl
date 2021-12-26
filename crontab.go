@@ -16,7 +16,7 @@ type Crontab struct {
 	_jobInfos map[string]jobInfo // back up jobInfos when crontab is created
 	done      chan struct{}
 	running   bool
-	afire     bool
+	burst     bool
 	cronLock  *sync.RWMutex
 	started   chan struct{}
 	suspended chan struct{}
@@ -114,7 +114,7 @@ func (crontab *Crontab) doStart() {
 	defer crontab.c.Stop()
 
 	crontab.running = true
-	crontab.afire = true
+	crontab.burst = true
 	crontab.started <- struct{}{}
 
 	select {
@@ -150,7 +150,7 @@ func (crontab *Crontab) Disable(name string) error {
 	crontab.cronLock.Lock()
 	defer crontab.cronLock.Unlock()
 
-	if !crontab.afire {
+	if !crontab.burst {
 		return errInactive
 	}
 
@@ -169,7 +169,7 @@ func (crontab *Crontab) Enable(name string) error {
 	crontab.cronLock.Lock()
 	defer crontab.cronLock.Unlock()
 
-	if !crontab.afire {
+	if !crontab.burst {
 		return errInactive
 	}
 
@@ -198,7 +198,7 @@ func (crontab *Crontab) Details() (map[string]map[string]jobInfo, error) {
 	crontab.cronLock.RLock()
 	defer crontab.cronLock.RUnlock()
 
-	if !crontab.afire {
+	if !crontab.burst {
 		return nil, errInactive
 	}
 
